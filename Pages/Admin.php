@@ -1,0 +1,38 @@
+<?php
+
+    /**
+     * KnownKeen administration
+     */
+
+    namespace IdnoPlugins\KnownKeen\Pages {
+
+        /**
+         * Default class to serve keen.io settings in administration
+         */
+        class Admin extends \Idno\Common\Page
+        {
+
+            function getContent()
+            {
+                $this->adminGatekeeper(); // Admins only
+                $t = \Idno\Core\site()->template();
+                $body = $t->draw('admin/knownkeen');
+                $t->__(array('title' => 'Keen.io', 'body' => $body))->drawPage();
+            }
+
+            function postContent() {
+                $this->adminGatekeeper(); // Admins only
+                $project_id = $this->getInput('keen_project_id');
+                \Idno\Core\site()->config->config['keen_project_id'] = $project_id;
+				$read_key = $this->getInput('keen_read_api_key');
+                \Idno\Core\site()->config->config['keen_read_api_key'] = $read_key;
+				$write_key = $this->getInput('keen_write_api_key');
+                \Idno\Core\site()->config->config['keen_write_api_key'] = $write_key;
+                \Idno\Core\site()->config()->save();
+                \Idno\Core\site()->session()->addMessage('Your Keen.io settings have been saved');
+                $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'admin/knownkeen/');
+            }
+
+        }
+
+    }
