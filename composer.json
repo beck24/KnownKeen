@@ -1,5 +1,6 @@
 {
     "require": {
-                "keen-io/keen-io": "~2.5"
+                "keen-io/keen-io": "~2.5",
+                "ua-parser/uap-php": "3.4.2"
 	}
 }
