@@ -17,7 +17,13 @@
 			}
 			
 			function registerEventHooks() {
+				\Idno\Core\site()->addEventHook('login/success', function (\Idno\Core\Event $event) {
+                    \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::recordLoginSuccess($event);
+                });
 				
+				\Idno\Core\site()->addEventHook('save', function (\Idno\Core\Event $event) {
+                    \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::recordEntitySave($event);
+                });
 			}
 			
             function registerPages() {
