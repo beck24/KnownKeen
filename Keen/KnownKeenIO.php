@@ -60,6 +60,19 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		public static function sendData() {
 			if (isset($GLOBALS['keenevents']) && $GLOBALS['keenevents']) {
 				try {
+					
+					// reload any entity info from the save event
+					// as it doesn't have an id at that point
+					if (isset($GLOBALS['keenevents']['events'])) {
+						foreach ($GLOBALS['keenevents']['events'] as $key => $save) {
+							if ($save['event']['name'] != 'save') {
+								continue;
+							}
+							$entity = \Idno\Common\Entity::getByUUID($save['event']['data']['uuid']);
+							$GLOBALS['keenevents']['events'][$key]['event']['data'] = self::getEntityData($entity);
+						}
+					}
+					
 					$client = \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::getClient();
 					$client->addEvents($GLOBALS['keenevents']);
 				} catch (Exception $exc) {
