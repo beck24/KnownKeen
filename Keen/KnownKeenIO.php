@@ -5,6 +5,19 @@ namespace IdnoPlugins\KnownKeen\Keen {
 	use KeenIO\Client\KeenIOClient;
 
 	class KnownKeenIO {
+		
+		public static $eventmap = array(
+			'login/success' => 'recordLoginSuccess',
+			'save' => 'recordEntitySave',
+			'updated' => 'recordEntityUpdated',
+			'delete' => 'recordEntityDelete',
+			'annotation/add/reply' => 'recordAnnotation',
+			'annotation/add/share' => 'recordAnnotation',
+			'annotation/add/mention' => 'recordAnnotation',
+			'annotation/add/like' => 'recordAnnotation',
+			'annotation/add/rsvp' => 'recordAnnotation',
+			'annotation/add/comment' => 'recordAnnotation'
+		);
 
 		/**
 		 * gets the KeenIOClient configured with our settings
@@ -19,6 +32,12 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			]);
 
 			return $client;
+		}
+		
+		
+		public static function recordAnnotation($event) {
+			$eventdata = $event->data();
+			error_log(print_r($eventdata,1));
 		}
 
 		/**
@@ -53,7 +72,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 
 			$GLOBALS['keenevents'][$collection][] = $data;
 		}
-
+		
 		/**
 		 * send our events to keen.io
 		 */
@@ -145,6 +164,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		public static function getIP() {
 			static $realip;
 			if ($realip) {
+				error_log('using ip cache');
 				return $realip;
 			}
 
@@ -178,6 +198,20 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			self::recordData('events', $data);
 		}
 		
+		public static function recordEntityDelete($event) {
+			$eventdata = $event->data();
+			$object = $eventdata['object'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'delete',
+					'data' => self::getEntityData($object)
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
+		
 		
 		public static function recordEntitySave($event) {
 			$eventdata = $event->data();
@@ -186,6 +220,20 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			$data = array(
 				'event' => array(
 					'name' => 'save',
+					'data' => self::getEntityData($object)
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
+		
+		public static function recordEntityUpdated($event) {
+			$eventdata = $event->data();
+			$object = $eventdata['object'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'updated',
 					'data' => self::getEntityData($object)
 				)
 			);

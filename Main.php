@@ -17,13 +17,12 @@
 			}
 			
 			function registerEventHooks() {
-				\Idno\Core\site()->addEventHook('login/success', function (\Idno\Core\Event $event) {
-                    \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::recordLoginSuccess($event);
-                });
+				$eventsmap = \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::$eventmap;
+				$listener = new \IdnoPlugins\KnownKeen\Keen\KnownKeenIO();
 				
-				\Idno\Core\site()->addEventHook('save', function (\Idno\Core\Event $event) {
-                    \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::recordEntitySave($event);
-                });
+				foreach ($eventsmap as $name => $method) {
+					\Idno\Core\site()->addEventHook($name, array($listener, $method));
+				}
 			}
 			
             function registerPages() {
