@@ -6,7 +6,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 
 	class KnownKeenIO {
 		
-		public static $eventmap = array(
+		public $eventmap = array(
 			'login/success' => 'recordLoginSuccess',
 			'save' => 'recordEntitySave',
 			'updated' => 'recordEntityUpdated',

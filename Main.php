@@ -14,10 +14,9 @@
 				});
 				
 				// register our event listeners
-				$eventsmap = \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::$eventmap;
 				$listener = new \IdnoPlugins\KnownKeen\Keen\KnownKeenIO();
-				
-				foreach ($eventsmap as $name => $method) {
+
+				foreach ($listener->eventmap as $name => $method) {
 					\Idno\Core\site()->addEventHook($name, array($listener, $method));
 				}
 			}
