@@ -11,12 +11,12 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			'save' => 'recordEntitySave',
 			'updated' => 'recordEntityUpdated',
 			'delete' => 'recordEntityDelete',
-			'annotation/add/reply' => 'recordAnnotation',
-			'annotation/add/share' => 'recordAnnotation',
-			'annotation/add/mention' => 'recordAnnotation',
-			'annotation/add/like' => 'recordAnnotation',
-			'annotation/add/rsvp' => 'recordAnnotation',
-			'annotation/add/comment' => 'recordAnnotation'
+			'annotation/add/reply' => 'recordAnnotationReply',
+			'annotation/add/share' => 'recordAnnotationShare',
+			'annotation/add/mention' => 'recordAnnotationMention',
+			'annotation/add/like' => 'recordAnnotationLike',
+			'annotation/add/rsvp' => 'recordAnnotationRSVP',
+			'annotation/add/comment' => 'recordAnnotationComment'
 		);
 
 		/**
@@ -35,9 +35,19 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		}
 		
 		
-		public static function recordAnnotation($event) {
+		public static function recordAnnotation($name, $event) {
 			$eventdata = $event->data();
-			error_log(print_r($eventdata,1));
+			$annotation = $eventdata['annotation'];
+			$entity = $eventdata['object'];
+			
+			$data = array(
+				'event' => array(
+					'name' => $name,
+					'data' => self::getAnnotationData($annotation, $entity)
+				)
+			);
+			
+			self::recordData('events', $data);
 		}
 
 		/**
@@ -204,7 +214,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			$data = array(
 				'event' => array(
 					'name' => 'delete',
-					'data' => self::getEntityData($object)
+					'data' => self::getEntityData($object, true)
 				)
 			);
 			
@@ -219,7 +229,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			$data = array(
 				'event' => array(
 					'name' => 'save',
-					'data' => self::getEntityData($object)
+					'data' => self::getEntityData($object, true)
 				)
 			);
 			
@@ -233,7 +243,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			$data = array(
 				'event' => array(
 					'name' => 'updated',
-					'data' => self::getEntityData($object)
+					'data' => self::getEntityData($object, true)
 				)
 			);
 			
@@ -289,25 +299,67 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $data;
 		}
 		
+		public static function getAnnotationData($annotation, $entity) {
+			
+			$data = array(
+				'permalink' => $annotation['permalink'],
+				'owner_name' => $annotation['owner_name'],
+				'content' => $annotation['content'],
+				'title' => $annotation['title'],
+				'entity' => self::getEntityData($entity)
+			);
+			
+			return $data;
+		}
 		
-		public static function getEntityData($entity) {
+		
+		public static function getEntityData($entity, $attributes = false) {
 			if (!($entity instanceof \Idno\Common\Entity)) {
 				return array();
 			}
 			
-			return array(
+			$data = array(
 				'id' => $entity->getID(),
 				'uuid' => $entity->getUUID(),
 				'access' => $entity->getAccess(true),
-				'attributes' => $entity->getAttributes(),
 				'contenttype' => $entity->getContentTypeCategoryTitle(),
 				'ownerID' => $entity->getOwnerID(),
 				'tags' => $entity->getTags(),
 				'title' => $entity->getTitle(),
 				'url' => $entity->getURL(),
 			);
+			
+			if ($attributes) {
+				$data['attributes'] = $entity->getAttributes();
+			}
+			
+			return $data;
 		}
-
+		
+		
+		public static function recordAnnotationReply($event) {
+			self::recordAnnotation('annotation/add/reply', $event);
+		}
+		
+		public static function recordAnnotationShare($event) {
+			self::recordAnnotation('annotation/add/share', $event);
+		}
+		
+		public static function recordAnnotationMention($event) {
+			self::recordAnnotation('annotation/add/mention', $event);
+		}
+		
+		public static function recordAnnotationLike($event) {
+			self::recordAnnotation('annotation/add/like', $event);
+		}
+		
+		public static function recordAnnotationRSVP($event) {
+			self::recordAnnotation('annotation/add/rsvp', $event);
+		}
+		
+		public static function recordAnnotationComment($event) {
+			self::recordAnnotation('annotation/add/comment', $event);
+		}
 	}
 
 }
