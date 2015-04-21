@@ -164,7 +164,6 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		public static function getIP() {
 			static $realip;
 			if ($realip) {
-				error_log('using ip cache');
 				return $realip;
 			}
 

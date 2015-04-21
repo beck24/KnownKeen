@@ -1,4 +1,4 @@
 <?php
 
-	error_log('footer extension');
-	echo "TEST";
+	// record our page view
+	\IdnoPlugins\KnownKeen\Keen\KnownKeenIO::recordPageView();
