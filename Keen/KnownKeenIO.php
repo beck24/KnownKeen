@@ -16,7 +16,8 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			'annotation/add/mention' => 'recordAnnotationMention',
 			'annotation/add/like' => 'recordAnnotationLike',
 			'annotation/add/rsvp' => 'recordAnnotationRSVP',
-			'annotation/add/comment' => 'recordAnnotationComment'
+			'annotation/add/comment' => 'recordAnnotationComment',
+			'email/send' => 'recordSendEmail',
 		);
 
 		/**
@@ -359,6 +360,29 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		
 		public static function recordAnnotationComment($event) {
 			self::recordAnnotation('annotation/add/comment', $event);
+		}
+		
+		public static function recordSendEmail($event) {
+			$eventdata = $event->data();
+			$email = $eventdata['email'];
+			$to = $email->message->getTo();
+			$from = $email->message->getFrom();
+			
+			$to_email = array_shift(array_keys($to));
+			$from_email = array_shift(array_keys($from));
+			
+			$data = array(
+				'event' => array(
+					'name' => 'email/send',
+					'data' => array(
+						'to' => $to_email,
+						'from' => $from_email,
+						'subject' => $email->message->getSubject()
+					)
+				)
+			);
+			error_log(print_r($data,1));
+			self::recordData('events', $data);
 		}
 	}
 
