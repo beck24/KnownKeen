@@ -24,6 +24,25 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			'site/newuser' => 'recordNewUser',
 			'updated' => 'recordEntityUpdated'
 		);
+		
+		public $eventDescriptions = array(
+			'annotation/add/comment' => 'Record data on new comments',
+			'annotation/add/like' => 'Record when content is liked',
+			'annotation/add/mention' => 'Record mentions',
+			'annotation/add/reply' => 'Record when replies are made to content',
+			'annotation/add/rsvp' => 'Record when RSVP\'s are made',
+			'annotation/add/share' => 'Record when content is shared',
+			'delete' => 'Record when content is deleted',
+			'email/send' => 'Record when email is sent',
+			'follow' => 'Record new followings',
+			'login/failure' => 'Record login failures',
+			'login/failure/nouser' => 'Record login failures due to invalid handle/email',
+			'login/success' => 'Record successful logins',
+			'logout/success' => 'Record successful logouts',
+			'save' => 'Record when content is created',
+			'site/newuser' => 'Record when new users are created',
+			'updated' => 'Record when content is updated'
+		);
 
 		/**
 		 * get a configured client for the keen API
