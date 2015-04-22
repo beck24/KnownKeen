@@ -18,10 +18,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			'annotation/add/rsvp' => 'recordAnnotationRSVP',
 			'annotation/add/comment' => 'recordAnnotationComment',
 			'email/send' => 'recordSendEmail',
+			'follow' => 'recordFollow'
 		);
 
 		/**
-		 * gets the KeenIOClient configured with our settings
+		 * get a configured client for the keen API
 		 * 
 		 * @return KeenIOClient
 		 */
@@ -36,7 +37,14 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		}
 		
 		
-		public static function recordAnnotation($name, $event) {
+		/**
+		 * 
+		 * @param string           $name  name of the annotation type
+		 * @param \Idno\Core\Event $event the annotation event
+		 * 
+		 * @return void
+		 */
+		private function recordAnnotation($name, $event) {
 			$eventdata = $event->data();
 			$annotation = $eventdata['annotation'];
 			$entity = $eventdata['object'];
@@ -53,11 +61,12 @@ namespace IdnoPlugins\KnownKeen\Keen {
 
 		/**
 		 * 
-		 * 
 		 * @param string $collection
-		 * @param array $data
+		 * @param array  $data
+		 * 
+		 * @return void
 		 */
-		public static function recordData($collection, $data) {
+		private function recordData($collection, $data) {
 			if (!isset($GLOBALS['keenevents'])) {
 				$GLOBALS['keenevents'] = array();
 			}
@@ -85,7 +94,8 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		}
 		
 		/**
-		 * send our events to keen.io
+		 * send our data to keen.
+		 * @return void
 		 */
 		public static function sendData() {
 			if (isset($GLOBALS['keenevents']) && $GLOBALS['keenevents']) {
@@ -105,6 +115,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 					
 					$client = \IdnoPlugins\KnownKeen\Keen\KnownKeenIO::getClient();
 					$client->addEvents($GLOBALS['keenevents']);
+					unset($GLOBALS['keenevents']); // prevent duplicate data if called multiple times per thread
 				} catch (Exception $exc) {
 					// @TODO - anything?
 				}
@@ -112,7 +123,8 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		}
 
 		/**
-		 * record a page view
+		 * Record pageview data
+		 * @return void
 		 */
 		public static function recordPageView() {
 			$url = \Idno\Core\site()->currentPage()->currentUrl();
@@ -135,6 +147,9 @@ namespace IdnoPlugins\KnownKeen\Keen {
 
 		/**
 		 * standard global data regarding the currently logged in user
+		 * @param \Idno\Entities\User $user
+		 * 
+		 * @return array
 		 */
 		public static function getUserData($user = null) {
 			static $usercache;
@@ -172,7 +187,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		 * 
 		 * @return string ip address
 		 */
-		public static function getIP() {
+		private function getIP() {
 			static $realip;
 			if ($realip) {
 				return $realip;
@@ -191,6 +206,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $realip;
 		}
 
+		/**
+		 * 
+		 * @param \Idno\Core\Event $event the event
+		 * @return void
+		 */
 		public static function recordLoginSuccess($event) {
 			$eventdata = $event->data();
 			$user = $eventdata['user'];
@@ -208,6 +228,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			self::recordData('events', $data);
 		}
 		
+		/**
+		 * 
+		 * @param \Idno\Core\Event $event the event
+		 * @return void
+		 */
 		public static function recordEntityDelete($event) {
 			$eventdata = $event->data();
 			$object = $eventdata['object'];
@@ -222,7 +247,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			self::recordData('events', $data);
 		}
 		
-		
+		/**
+		 * 
+		 * @param \Idno\Core\Event $event the event
+		 * @return void
+		 */
 		public static function recordEntitySave($event) {
 			$eventdata = $event->data();
 			$object = $eventdata['object'];
@@ -237,6 +266,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			self::recordData('events', $data);
 		}
 		
+		/**
+		 * 
+		 * @param \Idno\Core\Event $event the event
+		 * @return void
+		 */
 		public static function recordEntityUpdated($event) {
 			$eventdata = $event->data();
 			$object = $eventdata['object'];
@@ -251,7 +285,12 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			self::recordData('events', $data);
 		}
 
-		public static function getReferrerData() {
+		/**
+		 * 
+		 * @staticvar array $data
+		 * @return array
+		 */
+		private function getReferrerData() {
 			static $data;
 			if ($data) {
 				return $data;
@@ -272,7 +311,12 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $data;
 		}
 
-		public static function getUserAgentData() {
+		/**
+		 * 
+		 * @staticvar array $data
+		 * @return array
+		 */
+		private function getUserAgentData() {
 			static $data;
 			if ($data) {
 				return $data;
@@ -300,7 +344,13 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $data;
 		}
 		
-		public static function getAnnotationData($annotation, $entity) {
+		/**
+		 * 
+		 * @param array               $annotation annotation data
+		 * @param \Idno\Common\Entity $entity     the entity
+		 * @return array
+		 */
+		private function getAnnotationData($annotation, $entity) {
 			
 			$data = array(
 				'permalink' => $annotation['permalink'],
@@ -313,8 +363,13 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $data;
 		}
 		
-		
-		public static function getEntityData($entity, $attributes = false) {
+		/**
+		 * 
+		 * @param \Idno\Common\Entity $entity     the entity
+		 * @param bool                $attributes include entity details/annotations?
+		 * @return array
+		 */
+		private function getEntityData($entity, $attributes = false) {
 			if (!($entity instanceof \Idno\Common\Entity)) {
 				return array();
 			}
@@ -337,31 +392,65 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			return $data;
 		}
 		
-		
+		/**
+		 * Record reply annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationReply($event) {
 			self::recordAnnotation('annotation/add/reply', $event);
 		}
 		
+		/**
+		 * Record share annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationShare($event) {
 			self::recordAnnotation('annotation/add/share', $event);
 		}
 		
+		/**
+		 * Record mention annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationMention($event) {
 			self::recordAnnotation('annotation/add/mention', $event);
 		}
 		
+		/**
+		 * Record like annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationLike($event) {
 			self::recordAnnotation('annotation/add/like', $event);
 		}
 		
+		/**
+		 * Record RSVP annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationRSVP($event) {
 			self::recordAnnotation('annotation/add/rsvp', $event);
 		}
 		
+		/**
+		 * Record comment annotations
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordAnnotationComment($event) {
 			self::recordAnnotation('annotation/add/comment', $event);
 		}
 		
+		/**
+		 * Record sent emails
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
 		public static function recordSendEmail($event) {
 			$eventdata = $event->data();
 			$email = $eventdata['email'];
@@ -381,7 +470,30 @@ namespace IdnoPlugins\KnownKeen\Keen {
 					)
 				)
 			);
-			error_log(print_r($data,1));
+
+			self::recordData('events', $data);
+		}
+		
+		/**
+		 * Record follow events
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
+		public static function recordFollow($event) {
+			$eventData = $event->data();
+			$user = $eventData['user'];
+			$following = $eventData['following'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'follow',
+					'data' => array(
+						'user' => self::getUserData($user),
+						'following' => self::getUserData($following)
+					)
+				)
+			);
+			
 			self::recordData('events', $data);
 		}
 	}
