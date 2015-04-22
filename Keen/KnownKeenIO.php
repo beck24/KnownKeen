@@ -50,10 +50,21 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		 * @return KeenIOClient
 		 */
 		public static function getClient() {
+			$production_environment = \Idno\Core\site()->config()->keen_environment;
+			
+			$suffix = '';
+			if (!$production_environment) {
+				$suffix = '_test';
+			}
+			
+			$id = 'keen_project_id' . $suffix;
+			$write_key = 'keen_write_api_key' . $suffix;
+			$read_key = 'keen_read_api_key' . $suffix;
+			
 			$client = KeenIOClient::factory([
-						'projectId' => \Idno\Core\site()->config()->keen_project_id,
-						'writeKey' => \Idno\Core\site()->config()->keen_write_api_key,
-						'readKey' => \Idno\Core\site()->config()->keen_read_api_key
+						'projectId' => \Idno\Core\site()->config()->$id,
+						'writeKey' => \Idno\Core\site()->config()->$write_key,
+						'readKey' => \Idno\Core\site()->config()->$read_key
 			]);
 
 			return $client;

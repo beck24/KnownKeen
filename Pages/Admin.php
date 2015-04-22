@@ -44,6 +44,16 @@
 				$environment = $this->getInput('keen_environment');
                 \Idno\Core\site()->config->config['keen_environment'] = $environment;
 				
+				$pageviews = $this->getInput('keen_pageviews');
+                \Idno\Core\site()->config->config['keen_pageviews'] = $pageviews;
+				
+				$listener = new \IdnoPlugins\KnownKeen\Keen\KnownKeenIO();
+				foreach ($listener->eventmap as $event => $method) {
+					$attr = 'keen_event_' . $event;
+					$event_setting = $this->getInput($attr);
+					\Idno\Core\site()->config->config[$attr] = $event_setting;
+				}
+				
                 \Idno\Core\site()->config()->save();
                 \Idno\Core\site()->session()->addMessage('Your Keen.io settings have been saved');
                 $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'admin/knownkeen/');

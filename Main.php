@@ -16,8 +16,11 @@
 				// register our event listeners
 				$listener = new \IdnoPlugins\KnownKeen\Keen\KnownKeenIO();
 
-				foreach ($listener->eventmap as $name => $method) {
-					\Idno\Core\site()->addEventHook($name, array($listener, $method));
+				foreach ($listener->eventmap as $event => $method) {
+					$attr = 'keen_event_' . $event;
+					if (\Idno\Core\site()->config()->$attr) {
+						\Idno\Core\site()->addEventHook($event, array($listener, $method));	
+					}
 				}
 			}
 			
@@ -25,8 +28,12 @@
 				// Administration page
                 \Idno\Core\site()->addPageHandler('admin/knownkeen','\IdnoPlugins\KnownKeen\Pages\Admin');
 
-                \Idno\Core\site()->template()->extendTemplate('shell/footer','keen/pageview');
 				\Idno\Core\site()->template()->extendTemplate('admin/menu/items','admin/knownkeen/menu');
+				
+				// only record pageviews if the plugin setting is active
+				if (\Idno\Core\site()->config()->keen_pageviews) {
+					\Idno\Core\site()->template()->extendTemplate('shell/footer','keen/pageview');
+				}
             }
         }
 
