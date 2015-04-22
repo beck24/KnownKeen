@@ -7,18 +7,22 @@ namespace IdnoPlugins\KnownKeen\Keen {
 	class KnownKeenIO {
 		
 		public $eventmap = array(
-			'login/success' => 'recordLoginSuccess',
-			'save' => 'recordEntitySave',
-			'updated' => 'recordEntityUpdated',
-			'delete' => 'recordEntityDelete',
-			'annotation/add/reply' => 'recordAnnotationReply',
-			'annotation/add/share' => 'recordAnnotationShare',
-			'annotation/add/mention' => 'recordAnnotationMention',
-			'annotation/add/like' => 'recordAnnotationLike',
-			'annotation/add/rsvp' => 'recordAnnotationRSVP',
 			'annotation/add/comment' => 'recordAnnotationComment',
+			'annotation/add/like' => 'recordAnnotationLike',
+			'annotation/add/mention' => 'recordAnnotationMention',
+			'annotation/add/reply' => 'recordAnnotationReply',
+			'annotation/add/rsvp' => 'recordAnnotationRSVP',
+			'annotation/add/share' => 'recordAnnotationShare',
+			'delete' => 'recordEntityDelete',
 			'email/send' => 'recordSendEmail',
-			'follow' => 'recordFollow'
+			'follow' => 'recordFollow',
+			'login/failure' => 'recordLoginFailure',
+			'login/failure/nouser' => 'recordLoginFailureNoUser',
+			'login/success' => 'recordLoginSuccess',
+			'logout/success' => 'recordLogOut',
+			'save' => 'recordEntitySave',
+			'site/newuser' => 'recordNewUser',
+			'updated' => 'recordEntityUpdated'
 		);
 
 		/**
@@ -151,7 +155,7 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		 * 
 		 * @return array
 		 */
-		public static function getUserData($user = null) {
+		private function getUserData($user = null) {
 			static $usercache;
 			if (!is_array($usercache)) {
 				$usercache = array();
@@ -255,6 +259,11 @@ namespace IdnoPlugins\KnownKeen\Keen {
 		public static function recordEntitySave($event) {
 			$eventdata = $event->data();
 			$object = $eventdata['object'];
+			
+			$id = $object->getID();
+			if ($id) {
+				return; // this was previously created, save event called in duplicate
+			}
 			
 			$data = array(
 				'event' => array(
@@ -496,6 +505,86 @@ namespace IdnoPlugins\KnownKeen\Keen {
 			
 			self::recordData('events', $data);
 		}
+		
+		/**
+		 * Record when new users are created
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
+		public static function recordNewUser($event) {
+			$eventData = $event->data();
+			$user = $eventData['user'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'site/newuser',
+					'data' => array(
+						'user' => self::getUserData($user)
+					)
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
+		
+		/**
+		 * Record when someone fails to log in due to invalid email/handle
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
+		public static function recordLoginFailureNoUser($event) {
+			$eventData = $event->data();
+			
+			$data = array(
+				'event' => array(
+					'name' => 'login/failure/nouser',
+					'data' => $eventData
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
+		
+		/**
+		 * Record login failures
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
+		public static function recordLoginFailure($event) {
+			$eventData = $event->data();
+			$user = $eventData['user'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'login/failure',
+					'data' => array(
+						'user' => self::getUserData($user)
+					)
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
+		
+		/**
+		 * Record logout
+		 * 
+		 * @param \Idno\Core\Event $event
+		 */
+		public static function recordLogOut($event) {
+			$eventData = $event->data();
+			$user = $eventData['user'];
+			
+			$data = array(
+				'event' => array(
+					'name' => 'logout/success',
+					'data' => array(
+						'user' => self::getUserData($user)
+					)
+				)
+			);
+			
+			self::recordData('events', $data);
+		}
 	}
-
 }
